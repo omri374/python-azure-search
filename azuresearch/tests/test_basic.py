@@ -1,22 +1,27 @@
-import requests
 import os
 import json
-from nose import with_setup
-from time import sleep
+import os
 import unittest
+from time import sleep
+
 from haikunator import Haikunator
+from nose import with_setup
+
 haikunator = Haikunator()
 
 path = os.path.dirname(os.path.abspath(__file__))
 
+
 def get_json_file(name):
-    return json.load(open(os.path.join(path,'test_objects',name)))
+    return json.load(open(os.path.join(path, 'test_objects', name)))
 
 
 from azuresearch import indexes
 
+
 def test_azure():
     index = indexes.Index.load(get_json_file("hotels.index.json"))
+
 
 def setup_indexes():
     "Remove any indexes in the engine"
@@ -50,7 +55,6 @@ def test_index_create():
     assert index_list['value'][0]['name'] == "hotels"
 
 
-
 class TestHotels(unittest.TestCase):
     def setUp(self):
         setup_indexes()
@@ -73,16 +77,15 @@ class TestHotels(unittest.TestCase):
             assert count == 4
         self.index = hotels_index
 
-
     def test_search(self):
         results = self.index.search("expensive").json()
         print("Results were", len(results['value']), results)
         assert len(results['value']) == 2
-    
+
         results = self.index.search("memorable").json()
         print("Results were", len(results['value']), results)
         assert len(results['value']) == 1
-    
+
         results = self.index.search("expensive").json()
         print("Results were", len(results['value']), results)
         assert len(results['value']) == 2
@@ -96,8 +99,9 @@ def extra():
     # requests.get(
     #     "https://django-haystack-azure-search.search.windows.net/indexes/hotels/docs/search"
     # )
-    
+
     print("Cleanup -----------------")
+    index = indexes.Index.load(get_json_file("hotels.index.json"))
     i = index.delete()
     print(i.status_code)
     print(i.text)

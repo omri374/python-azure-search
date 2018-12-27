@@ -1,11 +1,10 @@
-import requests
-import os
 import json
+import os
 
 index_data = json.load(open(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)),'test_objects/hotels.index.json')))
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_objects/hotels.index.json')))
 document_data = json.load(open(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)),'test_objects/hotels.documents.json')))
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_objects/hotels.documents.json')))
 
 from azuresearch import indexes
 

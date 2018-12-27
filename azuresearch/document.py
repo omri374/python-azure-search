@@ -1,7 +1,3 @@
-import requests
-import copy
-import os
-
 class Documents(object):
     def __init__(self, index):
         self.index = index
@@ -17,18 +13,18 @@ class Documents(object):
         docs = []
         for doc in documents:
             if self.check_document(doc):
-                doc["@search.action"] = "mergeOrUpload"  
+                doc["@search.action"] = "mergeOrUpload"
                 docs.append(doc)
 
         data = {'value': docs}
-        return self.index.endpoint.post(endpoint=self.index.name+"/docs/index", data=data, needs_admin=True)
+        return self.index.endpoint.post(endpoint=self.index.name + "/docs/index", data=data, needs_admin=True)
 
     def delete(self, documents):
         docs = []
         for doc in documents:
             if self.check_document(doc):
-                doc["@search.action"] = "delete"  
+                doc["@search.action"] = "delete"
                 docs.append(doc)
 
         data = {'value': docs}
-        return self.index.endpoint.post(endpoint=self.index.name+"/docs/index", data=data, needs_admin=True)
+        return self.index.endpoint.post(endpoint=self.index.name + "/docs/index", data=data, needs_admin=True)
