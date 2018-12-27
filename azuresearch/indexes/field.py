@@ -1,5 +1,6 @@
 import json
 
+
 class Field(object):
     # "name": "name_of_field",
     # "type": "Edm.String | Collection(Edm.String) | Edm.Int32 | Edm.Int64 | Edm.Double | Edm.Boolean | Edm.DateTimeOffset | Edm.GeographyPoint",
@@ -32,12 +33,12 @@ class Field(object):
     def __init__(self,
                  name,
                  index_name=None,
-                 searchable = True,
+                 searchable=True,
                  filterable=True,
                  retrievable=True,
                  sortable=True,
                  facetable=True,
-                 key = False,
+                 key=False,
                  index_analyzer=None,
                  search_analyzer=None,
                  analyzer=None,
