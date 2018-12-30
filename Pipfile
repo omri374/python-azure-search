@@ -10,7 +10,6 @@ haikunator = "*"
 
 [packages]
 requests = "*"
-python-azure-search = {path = "C:/Projects/QuestionAnswering/python-azure-search"}
 
 [requires]
 python_version = "3.6"

@@ -33,7 +33,7 @@ class Field(object):
     def __init__(self,
                  name,
                  index_name=None,
-                 searchable=True,
+                 searchable=False,
                  filterable=True,
                  retrievable=True,
                  sortable=True,
@@ -62,8 +62,8 @@ class Field(object):
         self.synonym_maps = synonym_maps
 
     def __repr__(self):
-        return "<Azure{cls} : {index}.{name}>".format(
-            cls=self.__class__.__name__, index=self.index_name, name=self.name
+        return "Index.Field : {index}.{name}".format(
+            index=self.index_name, name=self.name
         )
 
     @property
@@ -86,7 +86,7 @@ class Field(object):
             "analyzer": self.analyzer,
             "searchAnalyzer": self.search_analyzer,
             "indexAnalyzer": self.index_analyzer,
-            "synonym_maps": self.synonym_maps
+            "synonymMaps": self.synonym_maps
         }
 
     @classmethod

@@ -6,7 +6,7 @@ setup(
     packages=['azuresearch', 'azuresearch.tests'],
     url='',
     license='',
-    author='Omri Mendels',
+    author='',
     author_email='',
-    description=''
+    description='', install_requires=['requests']
 )

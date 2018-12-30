@@ -11,7 +11,7 @@ class Index(object):
 
     def __init__(self,
                  name,
-                 fields,
+                 fields=None,
                  suggesters=None,
                  analyzers=None,
                  char_filters=None,
@@ -21,6 +21,8 @@ class Index(object):
                  default_scoring_profile=None,
                  cors_options=None
                  ):
+        if fields is None:
+            fields = []
         if analyzers is None:
             analyzers = []
         if suggesters is None:
@@ -50,9 +52,27 @@ class Index(object):
         self.documents = Documents(self)
 
     def __repr__(self):
-        return "<AzureIndex: {name}>".format(
-            name=self.name
-        )
+        return "<AzureIndex: \n" \
+               "index name: {name}\n" \
+               "fields: {fields}\n" \
+               "scoringProfiles: {scoringProfiles}\n" \
+               "corsOptions: {corsOptions}\n" \
+               "suggesters: {suggesters}\n" \
+               "analyzers: {analyzers}\n" \
+               "tokenizers: {tokenizers}\n" \
+               "tokenFilters: {tokenFilters}\n" \
+               "charFilters: {charFilters}\n" \
+               "defaultScoringProfile: {defaultScoringProfile}>" \
+            .format(name=self.name,
+                    fields="\n".join(str(field) for field in self.fields),
+                    scoringProfiles=[sp for sp in self.scoring_profiles],
+                    corsOptions=self.cors_options,
+                    suggesters=[sg for sg in self.suggesters],
+                    analyzers=[an for an in self.analyzers],
+                    tokenizers=[tk for tk in self.tokenizers],
+                    tokenFilters=[tkf for tkf in self.token_filters],
+                    charFilters=[chf for chf in self.char_filters],
+                    defaultScoringProfile=self.default_scoring_profile)
 
     def to_dict(self):
         return {
@@ -75,21 +95,21 @@ class Index(object):
         if type(data) is not dict:
             raise Exception("Failed to parse input as Dict")
 
-        if data['suggesters'] is None:
+        if 'suggesters' not in data:
             data['suggesters'] = []
-        if data['analyzers'] is None:
+        if 'analyzers' not in data:
             data['analyzers'] = []
-        if data['scoringProfiles'] is None:
+        if 'scoringProfiles' not in data:
             data['scoringProfiles'] = []
-        if data['tokenizers'] is None:
+        if 'tokenizers' not in data:
             data['tokenizers'] = []
-        if data['tokenFilters'] is None:
+        if 'tokenFilters' not in data:
             data['tokenFilters'] = []
-        if data['charFilters'] is None:
+        if 'charFilters' not in data:
             data['charFilters'] = []
-        if data['corsOptions'] is None:
+        if 'corsOptions' not in data:
             data['corsOptions'] = None
-        if data['defaultScoringProfile'] is None:
+        if 'defaultScoringProfile' not in data:
             data['defaultScoringProfile'] = None
 
         return cls(name=data['name'],
@@ -97,7 +117,7 @@ class Index(object):
                    scoring_profiles=data['scoringProfiles'],
                    suggesters=data['suggesters'],
                    analyzers=data['analyzers'],
-                   char_filters=data['char_filters'],
+                   char_filters=data['charFilters'],
                    tokenizers=data['tokenizers'],
                    token_filters=data['tokenFilters'],
                    cors_options=data['corsOptions'],
@@ -116,6 +136,9 @@ class Index(object):
 
     def delete(self):
         return self.endpoint.delete(endpoint=self.name, needs_admin=True)
+
+    def verify(self):
+        return self.get()
 
     @classmethod
     def list(cls):

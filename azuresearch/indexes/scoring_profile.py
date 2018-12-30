@@ -4,7 +4,6 @@ class ScoringProfile(object):
     taken from https://docs.microsoft.com/en-us/rest/api/searchservice/add-scoring-profiles-to-a-search-index
     '''
 
-
     def __init__(self, name, text=None, functions=None):
 
         if text is None:
@@ -15,6 +14,11 @@ class ScoringProfile(object):
         self.name = name
         self.text = text
         self.functions = functions
+
+    def __repr__(self):
+        return "<Suggester: {name}>".format(
+            name=self.name
+        )
 
     def to_dict(self):
         return {
@@ -31,6 +35,7 @@ class ScoringProfileText(object):
     https://docs.microsoft.com/en-us/rest/api/searchservice/add-scoring-profiles-to-a-search-index
     @:param weights: a list of field name : weight value pairs
     '''
+
     def __init__(self, weights):
         self.weights = weights
 
@@ -48,6 +53,7 @@ class ScoreProfileTextWeights(object):
     @:param searchable_field_name: name of field
     @:param relative_weight_value: weight value
     '''
+
     def __init__(self, searchable_field_name, relative_weight_value):
         self.searchable_field_name = searchable_field_name
         self.relative_weight_value = relative_weight_value
@@ -61,11 +67,12 @@ class ScoringProfileFunction(object):
     A function to perform for scoring.
     See this link for more information:
     https://docs.microsoft.com/en-us/rest/api/searchservice/add-scoring-profiles-to-a-search-index#bkmk_indexref    '''
+
     def __init__(self,
                  function_type,
                  boost,
                  field_name,
-                 interpolation='linear',
+                 interpolation=None,
                  magnitude=None,
                  freshness=None,
                  distance=None,

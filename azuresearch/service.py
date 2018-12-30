@@ -1,4 +1,5 @@
 import copy
+import logging
 import os
 
 import requests
@@ -9,6 +10,10 @@ class Connectable(object):
         pass
 
 
+class MissingEnvironmentVariableError(Exception):
+    pass
+
+
 class Endpoint(object):
     api_version = "2017-11-11-Preview"
 
@@ -17,16 +22,25 @@ class Endpoint(object):
 
     @property
     def _azure_path(self):
-        # TODO: Raise better exception
-        return os.environ['AZURE_SEARCH_URL']
+        url = os.environ.get('AZURE_SEARCH_URL', None)
+        if url is None:
+            raise MissingEnvironmentVariableError("The Azure Search URL is required as an environment variable")
+        return url
 
     @property
     def _azure_api_key(self):
-        return os.environ['AZURE_SEARCH_API_KEY']
+        api_key = os.environ.get('AZURE_SEARCH_API_KEY', None)
+        if api_key is None:
+            raise MissingEnvironmentVariableError("The Azure Search api-key is required as an environment variable")
+        return api_key
 
     @property
     def _azure_admin_api_key(self):
-        return os.environ['AZURE_SEARCH_ADMIN_API_KEY']
+        admin_api_key = os.environ.get('AZURE_SEARCH_ADMIN_API_KEY', None)
+        if admin_api_key is None:
+            raise MissingEnvironmentVariableError(
+                "The Azure Search admin api-key is required as an environment variable")
+        return admin_api_key
 
     def query_path(self, endpoint):
         if endpoint:
@@ -54,6 +68,9 @@ class Endpoint(object):
     def get(self, data=None, endpoint=None, needs_admin=False):
         if data is None:
             data = {}
+        logging.debug("GET request\n"
+                      "URL: {url}."
+                      "Params: {params}".format(url=self.query_path(endpoint), params=self.query_args()))
         return requests.get(
             self.query_path(endpoint),
             params=self.query_args(),
@@ -64,6 +81,10 @@ class Endpoint(object):
     def post(self, data=None, endpoint=None, needs_admin=False):
         if data is None:
             data = {}
+        logging.debug("POST request\n"
+                      "URL: {url}."
+                      "Params: {params}".format(url=self.query_path(endpoint), params=self.query_args()))
+
         return requests.post(
             self.query_path(endpoint),
             params=self.query_args(),
@@ -71,12 +92,16 @@ class Endpoint(object):
             json=data
         )
 
-    def put(self, data=None, endpoint=None, needs_admin=False):
+    def put(self, data=None, endpoint=None, needs_admin=False, extra=None):
         if data is None:
             data = {}
+        logging.debug("PUT request\n"
+                      "URL: {url}."
+                      "Params: {params}".format(url=self.query_path(endpoint), params=self.query_args(extra)))
+
         return requests.put(
             self.query_path(endpoint),
-            params=self.query_args(),
+            params=self.query_args(extra),
             headers=self.query_headers(needs_admin),
             json=data
         )
@@ -84,6 +109,10 @@ class Endpoint(object):
     def delete(self, data=None, endpoint=None, needs_admin=False):
         if data is None:
             data = {}
+        logging.debug("DELETE request\n"
+                      "URL: {url}."
+                      "Params: {params}".format(url=self.query_path(endpoint), params=self.query_args()))
+
         return requests.delete(
             self.query_path(endpoint),
             params=self.query_args(),
