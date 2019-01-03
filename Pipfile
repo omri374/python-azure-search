@@ -10,6 +10,7 @@ haikunator = "*"
 
 [packages]
 requests = "*"
+python-azure-search = {editable = true,path = "."}
 
 [requires]
 python_version = "3.6"

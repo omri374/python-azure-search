@@ -95,7 +95,7 @@ class Field(object):
             if type(data) is str:
                 data = json.loads(data)
             if type(data) is not dict:
-                raise Exception("Failed to load JSON file with index data")
+                raise Exception("Failed to load JSON file with field data")
             field_type = types[data.pop('type')]
             kwargs.update(data)
             return field_type(**kwargs)

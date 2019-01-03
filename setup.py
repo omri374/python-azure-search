@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='python-azure-search',
     version='',
-    packages=['azuresearch', 'azuresearch.tests'],
+    packages=['azuresearch','azuresearch.indexes','azuresearch.skills','azuresearch.analyzers'],
     url='',
     license='',
     author='',

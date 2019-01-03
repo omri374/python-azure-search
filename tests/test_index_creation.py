@@ -8,12 +8,11 @@ from haikunator import Haikunator
 from azuresearch.indexes import Index
 
 haikunator = Haikunator()
-
 path = os.path.dirname(os.path.abspath(__file__))
 
 
 def get_json_file(name):
-    return json.load(open(os.path.join(path, 'test_objects', name)))
+    return json.load(open(os.path.join(path, 'output_jsons', name)))
 
 
 def test_load_index_from_file():

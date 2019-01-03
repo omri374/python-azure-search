@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "089d83235df77f0c690f01eef1ecbd57282b6954fe4125c65075e22fe7250d41"
+            "sha256": "add6a5efba5407eaec6daa6000d32bfb090af22f50705281f3a198f14edb9dd8"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -38,7 +38,8 @@
             "version": "==2.8"
         },
         "python-azure-search": {
-            "path": "C:/Projects/QuestionAnswering/python-azure-search"
+            "editable": true,
+            "path": "."
         },
         "requests": {
             "hashes": [
