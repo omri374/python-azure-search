@@ -27,8 +27,15 @@ class CustomAnalyzer(AbstractAnalyzer):
         self.token_filters = token_filters
 
     def to_dict(self):
-        return {
+        dict = {
             "name": self.analyzer_name,
             "@odata.type": self.analyzer_type,
-            "searchMode": self.search_mode
+            "searchMode": self.search_mode,
+            "charFilters": self.char_filters,
+            "tokenizer": self.tokenizer,
+            "token_filters": self.token_filters
         }
+
+        # Remove None values
+        dict = {k: v for k, v in dict.items() if v is not None}
+        return dict

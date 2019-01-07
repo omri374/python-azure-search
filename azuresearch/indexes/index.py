@@ -19,7 +19,7 @@ class Index(object):
                  token_filters=None,
                  scoring_profiles=None,
                  default_scoring_profile=None,
-                 cors_options=None
+                 cors_options=None, **params
                  ):
         if fields is None:
             fields = []
@@ -75,7 +75,7 @@ class Index(object):
                     defaultScoringProfile=self.default_scoring_profile)
 
     def to_dict(self):
-        return {
+        dict = {
             "name": self.name,
             "fields": [field.to_dict() for field in self.fields],
             "scoringProfiles": [sp.to_dict() for sp in self.scoring_profiles],
@@ -87,6 +87,12 @@ class Index(object):
             "charFilters": self.char_filters,
             "defaultScoringProfile": self.default_scoring_profile
         }
+        # Add additional arguments
+        dict.update(self.params)
+
+        # Remove None values
+        dict = {k: v for k, v in dict.items() if v is not None}
+        return dict
 
     @classmethod
     def load(cls, data):

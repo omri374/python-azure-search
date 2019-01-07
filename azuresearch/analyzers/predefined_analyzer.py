@@ -11,11 +11,16 @@ class PredefinedAnalyzer(AbstractAnalyzer):
         self.options = options
 
     def to_dict(self):
-        return {
+        dict= {
             "name": self.analyzer_name,
             "@odata.type": self.analyzer_type,
-            "searchMode": self.search_mode
+            "searchMode": self.search_mode,
+            "options": self.options
         }
+
+        # Remove None values
+        dict = {k: v for k, v in dict.items() if v is not None}
+        return dict
 
 
 predefined_analyzers = {

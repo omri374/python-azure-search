@@ -70,8 +70,8 @@ class ScoringProfileFunction(object):
 
     def __init__(self,
                  function_type,
-                 boost,
                  field_name,
+                 boost=None,
                  interpolation=None,
                  magnitude=None,
                  freshness=None,
@@ -87,8 +87,9 @@ class ScoringProfileFunction(object):
         self.tag = tag
 
     def to_dict(self):
-        return {
+        dict = {
             "type": self.function_type,
+            "boost": self.boost,
             "fieldName": self.field_name,
             "interpolation": self.interpolation,
             "magnitude": self.magnitude,
@@ -96,6 +97,9 @@ class ScoringProfileFunction(object):
             "distance": self.distance,
             "tag": self.tag,
         }
+        # Remove None values
+        dict = {k: v for k, v in dict.items() if v is not None}
+        return dict
 
 
 function_types = {
