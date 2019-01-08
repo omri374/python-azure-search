@@ -1,20 +1,13 @@
-import json
-import os
 import unittest
 from time import sleep
 
-from haikunator import Haikunator
+import pytest
 
 from azuresearch.indexes import Index
-
-haikunator = Haikunator()
-path = os.path.dirname(os.path.abspath(__file__))
+from tests.test_helpers import get_json_file, get_fake_name
 
 
-def get_json_file(name):
-    return json.load(open(os.path.join(path, 'output_jsons', name)))
-
-
+@pytest.mark.integration
 def test_load_index_from_file():
     index = Index("test_index", [])
     new_index = index.load(get_json_file("hotels.index.json"))
@@ -42,6 +35,7 @@ def teardown_indexes():
     assert len(index_list['value']) == 0
 
 
+@pytest.mark.integration
 class IndexCreate(unittest.TestCase):
     def setUp(self):
         setup_indexes()
@@ -65,11 +59,12 @@ class IndexCreate(unittest.TestCase):
         assert index_list['value'][0]['name'] == "hotels"
 
 
+@pytest.mark.integration
 class TestUpload(unittest.TestCase):
     def setUp(self):
         setup_indexes()
         hotels_index = Index.load(get_json_file("hotels.index.json"))
-        name = haikunator.haikunate()
+        name = get_fake_name()
         hotels_index.name = name
         hotels_index.update()
         hotels_index.documents.add(get_json_file("hotels.documents.json"))

@@ -5,11 +5,6 @@ import os
 import requests
 
 
-class Connectable(object):
-    def __init__(self):
-        pass
-
-
 class MissingEnvironmentVariableError(Exception):
     pass
 

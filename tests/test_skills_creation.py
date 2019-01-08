@@ -2,21 +2,8 @@ import pytest
 
 from azuresearch.skills import Skillset, SkillInput, Skill, SkillOutput
 from azuresearch.skills.predefined.cognitive_skills import KeyPhraseExtractionSkill
-from tests.test_index_creation import get_json_file
-
-
-def ordered(obj):
-    """
-    Order dictionary by keys, recursively
-    :param obj:
-    :return:
-    """
-    if isinstance(obj, dict):
-        return sorted((k, ordered(v)) for k, v in obj.items())
-    if isinstance(obj, list):
-        return sorted(ordered(x) for x in obj)
-    else:
-        return obj
+from tests.test_connection_to_azure_search import get_json_file
+from tests.test_helpers import ordered
 
 
 def get_simple_skill(type="my_skill_type", input_name="name", input_source="source", output_name="name",

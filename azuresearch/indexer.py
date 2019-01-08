@@ -1,12 +1,13 @@
+import requests
+
 from azuresearch.base_api_call import BaseApiCall
 
 
 class Indexer(BaseApiCall):
 
-
     def __init__(self, name, data_source_name, target_index_name, skillset_name, field_mappings=None,
                  output_field_mappings=None, schedule=None, disabled=False, parameters=None, **params):
-        super(Indexer, self).__init__(service_name = "indexer")
+        super(Indexer, self).__init__(service_name="indexer")
         self.output_field_mappings = output_field_mappings
         self.field_mappings = field_mappings
         self.skill_set_name = skillset_name
@@ -15,6 +16,7 @@ class Indexer(BaseApiCall):
         self.name = name
         self.schedule = schedule
         self.disabled = disabled
+        self.parameters = parameters
 
         if self.field_mappings is None:
             self.field_mappings = []
@@ -41,7 +43,7 @@ class Indexer(BaseApiCall):
                                                                        output_field_mappings=self.output_field_mappings)
 
     def to_dict(self):
-        dict = {
+        output_dict = {
             "name": self.name,
             "dataSourceName": self.data_source_name,
             "targetIndexName": self.target_index_name,
@@ -54,11 +56,30 @@ class Indexer(BaseApiCall):
         }
 
         # Add additional arguments
-        dict.update(self.params)
+        output_dict.update(self.params)
 
         # Remove None values
-        dict = {k: v for k, v in dict.items() if v is not None}
+        output_dict = BaseApiCall.remove_empty_values_from_dict(output_dict)
         return dict
+
+    def run(self):
+        result = self.endpoint.post(endpoint="run")
+        if result.status_code != requests.codes.accepted:
+            raise Exception(
+                "Error running indexer. result: {result}".format(result=result))
+
+    def reset(self):
+        result = self.endpoint.post(endpoint="reset")
+        if result.status_code != requests.codes.no_content:
+            raise Exception(
+                "Error resetting indexer. result: {result}".format(result=result))
+
+    def update(self):
+        result = self.endpoint.post(endpoint="reset")
+        if result.status_code != requests.codes.no_content:
+            raise Exception(
+                "Error resetting indexer. result: {result}".format(result=result))
+
 
 
 class IndexerSchedule(object):

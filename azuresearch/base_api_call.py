@@ -16,10 +16,10 @@ class BaseApiCall(ABC):
         :param endpoint:
         """
         self.service_name = service_name
-        if not endpoint:
-            self.endpoint = Endpoint(service_name)
-        else:
+        if endpoint:
             self.endpoint = endpoint
+        else:
+            self.endpoint = Endpoint(service_name)
 
     @abstractmethod
     def to_dict(self):

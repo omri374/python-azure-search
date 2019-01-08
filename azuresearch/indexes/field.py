@@ -2,36 +2,27 @@ import json
 
 
 class Field(object):
-    # "name": "name_of_field",
-    # "type": "Edm.String | Collection(Edm.String) | Edm.Int32 | Edm.Int64 | Edm.Double | Edm.Boolean | Edm.DateTimeOffset | Edm.GeographyPoint",
-    # "searchable": true (default where applicable) | false (only Edm.String and Collection(Edm.String) fields can be searchable),
-    # "filterable": true (default) | false,
-    # "retrievable": true (default) | false,
-    # "sortable": true (default where applicable) | false (Collection(Edm.String) fields cannot be sortable),
-    # "facetable": true (default where applicable) | false (Edm.GeographyPoint fields cannot be facetable),
-    # "key": true | false (default, only Edm.String fields can be keys),
-    # "indexAnalyzer": "name of the indexing analyzer" (only if 'searchAnalyzer' is set and 'analyzer' is not set)
-    # "searchAnalyzer": "name of the search analyzer", (only if 'indexAnalyzer' is set and 'analyzer' is not set)
-    # "analyzer": "name of the analyzer used for search and indexing", (only if 'searchAnalyzer' and 'indexAnalyzer' are not set)
-    # "synonymMaps": "List of synonym map to use for this index"
-
-    name = None
-    index_name = None  # For debugging only, not used by the Azure Search API
-    _field_type = None
-    python_type = None  # Why python type is this?
-    searchable = False  # only Edm.String and Collection(Edm.String) fields can be searchable
-    filterable = True
-    retrievable = False
-    sortable = True
-    facetable = False
-    key = False
-    index_analyzer = None
-    search_analyzer = None
-    analyzer = None,
-    synonym_maps = []
+    """
+    :param name: name_of_field,
+    :param type: Edm.String | Collection(Edm.String) | Edm.Int32 | Edm.Int64 | Edm.Double | Edm.Boolean | Edm.DateTimeOffset | Edm.GeographyPoint,
+    :param searchable: true (default where applicable) | false (only Edm.String and Collection(Edm.String) fields can be searchable),
+    :param filterable: true (default) | false,
+    :param retrievable: true (default) | false,
+    :param sortable: true (default where applicable) | false (Collection(Edm.String) fields cannot be sortable),
+    :param facetable: true (default where applicable) | false (Edm.GeographyPoint fields cannot be facetable),
+    :param key: true | false (default, only Edm.String fields can be keys),
+    :param index_analyzer: name of the indexing analyzer (only if 'searchAnalyzer' is set and 'analyzer' is not set)
+    :param search_analyzer: name of the search analyzer, (only if 'indexAnalyzer' is set and 'analyzer' is not set)
+    :param analyzer: Sets the name of the language analyzer to use for the field.
+    For the allowed set of values see Language support (https://docs.microsoft.com/en-us/rest/api/searchservice/language-support).
+    This option can be used only with searchable fields and it can't be set together with either search_analyzer or index_analyzer.
+    Once the analyzer is chosen, it cannot be changed for the field.
+    :param synonym_maps: List of synonym map to use for this index
+    """
 
     def __init__(self,
                  name,
+                 type=None,
                  index_name=None,
                  searchable=False,
                  filterable=True,
@@ -46,6 +37,8 @@ class Field(object):
                  **kwargs):
 
         self.name = name
+        if type is not None:
+            self._field_type = type
         self.index_name = index_name
         self.searchable = searchable
         self.filterable = filterable
@@ -61,6 +54,9 @@ class Field(object):
             synonym_maps = []
         self.synonym_maps = synonym_maps
 
+        self._validate_type()
+        self._validate_name()
+
     def __repr__(self):
         return "Index.Field : {index}.{name}".format(
             index=self.index_name, name=self.name
@@ -68,13 +64,21 @@ class Field(object):
 
     @property
     def field_type(self):
-        if self._field_type:
+        if hasattr(self, '_field_type') and self._field_type is not None:
             return self._field_type
         else:
             return "Edm.{}".format(self.__class__.__name__.replace('Field', ""))
 
+    def _validate_type(self):
+        if self.field_type not in types.keys():
+            raise ValueError("Azure Search only supports these types: {types}".format(types=types.keys()))
+
+    def _validate_name(self):
+        if self.name is None or self.name == "":
+            raise ValueError("Field must have a name")
+
     def to_dict(self):
-        return {
+        return_dict = {
             "name": self.name,
             "type": self.field_type,
             "searchable": self.searchable,
@@ -88,6 +92,9 @@ class Field(object):
             "indexAnalyzer": self.index_analyzer,
             "synonymMaps": self.synonym_maps
         }
+        # Remove None values
+        return_dict = {k: v for k, v in return_dict.items() if v is not None}
+        return return_dict
 
     @classmethod
     def load(cls, data, **kwargs):
@@ -116,8 +123,8 @@ class CollectionField(Field):
     _field_type = "Collection(Edm.String)"
 
     def __init__(self, name, searchable=True, key=False, *args, **kwargs):
-        kwargs['sortable'] = False
-        super().__init__(name, *args, **kwargs)
+        kwargs['sortable'] = False  # Collections cannot be sortable
+        super().__init__(name, "Collection(Edm.String)", *args, **kwargs)
         self.searchable = searchable
 
 
