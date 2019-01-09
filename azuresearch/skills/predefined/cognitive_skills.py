@@ -1,4 +1,3 @@
-import json
 import logging
 
 from azuresearch.skills import Skill, SkillInput, SkillOutput
@@ -37,11 +36,9 @@ class KeyPhraseExtractionSkill(Skill):
         params = {"defaultLanguageCode": default_language_code,
                   "maxKeyPhraseCount": max_key_phrase_count}
 
-        super(KeyPhraseExtractionSkill, self).__init__(
-            predefined_skills['KeyPhraseExtractionSkill'], inputs=inputs, outputs=outputs, context=context, kwargs=params)
-
-        self.default_language_code = default_language_code
-        self.max_key_phrase_count = max_key_phrase_count
+        super(KeyPhraseExtractionSkill, self).__init__(skill_type=
+                                                       predefined_skills['KeyPhraseExtractionSkill'], inputs=inputs,
+                                                       outputs=outputs, context=context, **params)
 
     def get_default_outputs(self):
         logging.debug("Using default outputs")
@@ -67,15 +64,9 @@ class LanguageDetectionSkill(Skill):
     """
 
     def __init__(self, categories, inputs, outputs, context):
-        super(LanguageDetectionSkill, self).__init__(predefined_skills['LanguageDetectionSkill'], categories, inputs)
-
-    def to_dict(self):
-        skill_dict = super.to_dict()
-        return skill_dict
-
-    @classmethod
-    def load(cls, data, **kwargs):
-        Skill.load(data, **kwargs)
+        super(LanguageDetectionSkill, self).__init__(skills=predefined_skills['LanguageDetectionSkill'],
+                                                     categories=categories, inputs=inputs, outputs=outputs,
+                                                     context=context)
 
 
 class MergeSkill(Skill):
@@ -86,35 +77,11 @@ class MergeSkill(Skill):
     The default value is " ". To omit the space, set the value to "".
      """
 
-    def __init__(self, insert_pre_tag=" ", insert_post_tag=" "):
-        outputs = []
+    def __init__(self, inputs, outputs, context, insert_pre_tag=" ", insert_post_tag=" ", ):
+        params = {"insertPreTag": insert_pre_tag,
+                  "insertPostTag": insert_post_tag}
 
-        super(MergeSkill, self).__init__(predefined_skills['MergeSkill'], categories, inputs,
-                                         outputs, context)
-        self.insert_pre_tag = insert_pre_tag
-        self.insert_post_tag = insert_post_tag
-
-    def to_dict(self):
-        skill_dict = super.to_dict()
-        skill_dict['insertPreTag'] = self.insert_pre_tag
-        skill_dict['insertPostTag'] = self.insert_post_tag
-        skill_dict['score'] = self.score
-        return skill_dict
-
-    @classmethod
-    def load(cls, data, **kwargs):
-        if data:
-            if type(data) is str:
-                data = json.loads(data)
-            if type(data) is not dict:
-                raise Exception("Failed to load JSON file with skill data")
-            kwargs.update(data)
-            if "@odata.type" not in data:
-                raise Exception("Please provide the skill type (@odata.type)")
-
-            return cls()
-        else:
-            raise Exception("data is Null")
+        super(MergeSkill, self).__init__(skill_type=predefined_skills['MergeSkill'], inputs=inputs, outputs=outputs, context=context, **params)
 
 
 class SplitSkill(Skill):
@@ -133,35 +100,9 @@ class SplitSkill(Skill):
 
     def __init__(self, categories, inputs, outputs, context, text_split_mode='pages', maximum_page_length=None,
                  default_language_code='en'):
+        params = {"testSplitMode": text_split_mode,
+                  "maximumPageLength": maximum_page_length,
+                  "defaultLanguageCode": default_language_code}
+
         super(SplitSkill, self).__init__(predefined_skills['SplitSkill'], categories, inputs,
-                                         outputs, context)
-        self.text_split_mode = text_split_mode
-        self.maximum_page_length = maximum_page_length
-        self.default_language_code = default_language_code
-
-    def to_dict(self):
-        skill_dict = super.to_dict()
-        skill_dict['textSplitMode'] = self.text_split_mode
-        skill_dict['maximumPageLength'] = self.maximum_page_length
-        skill_dict['defaultLanguageCode'] = self.default_language_code
-        return skill_dict
-
-    @classmethod
-    def load(cls, data, **kwargs):
-        if data:
-            if type(data) is str:
-                data = json.loads(data)
-            if type(data) is not dict:
-                raise Exception("Failed to load JSON file with skill data")
-            kwargs.update(data)
-            if "@odata.type" not in data:
-                raise Exception("Please provide the skill type (@odata.type)")
-
-            return cls(data['inputs'],
-                       data['outputs'],
-                       data['categories'],
-                       data['context'],
-                       data['insertPreTag'],
-                       data['insertPostTag'])
-        else:
-            raise Exception("data is Null")
+                                         outputs, context,**params)

@@ -25,12 +25,15 @@ class Skill(AzureSearchObject):
         if not isinstance(outputs[0], SkillOutput):
             raise TypeError("Outputs should be of type SkillOutput")
 
-        self.skill_type = kwargs.get("@odata.type")
+        if "@odata.type" in kwargs:
+            self.skill_type = kwargs.get("@odata.type")
+        else:
+            self.skill_type = kwargs.get("skill_type")
         self.inputs = inputs
         self.outputs = outputs
         self.context = kwargs.get("context")
 
-        self.params = {k:v for (k,v) in kwargs.items() if k not in ['@odata.type','inputs','outputs','context']}
+        self.params = {k:v for (k,v) in kwargs.items() if k not in ['skill_type','@odata.type','inputs','outputs','context']}
 
 
     def to_dict(self):
@@ -65,8 +68,6 @@ class Skill(AzureSearchObject):
             data['outputs'] = [SkillOutput.load(so) for so in data['outputs']]
             data['inputs'] = [SkillInput.load(so) for so in data['inputs']]
 
-            if 'context' not in data:
-                data['context'] = None
             skill_type = data['@odata.type']
             return cls(**data)
         else:

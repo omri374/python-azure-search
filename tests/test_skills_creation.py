@@ -9,7 +9,7 @@ from tests.test_helpers import ordered, get_json_file
 
 def get_simple_skill(type="my_skill_type", input_name="name", input_source="source", output_name="name",
                      output_target="target", context="context"):
-    skill = Skill(type, [SkillInput(input_name, input_source)], [SkillOutput(output_name, output_target)], context=context)
+    skill = Skill(skill_type=type, inputs=[SkillInput(input_name, input_source)], outputs=[SkillOutput(output_name, output_target)], context=context)
     return skill
 
 
@@ -18,7 +18,7 @@ def test_skill_creation():
     assert skill.inputs[0].name == "name"
     assert skill.inputs[0].source == "source"
     assert skill.outputs[0].name == "name"
-    assert skill.outputs[0].targetName == "target"
+    assert skill.outputs[0].target_name == "target"
     assert skill.skill_type == "my_skill_type"
 
 
@@ -56,7 +56,7 @@ def test_skillset_simple_skill_wrong_type_throws_exception():
 
 def test_skillset_init_correct():
     skill = get_simple_skill()
-    skillset = Skillset("my_skillset", [skill], description="desc")
+    skillset = Skillset(name="my_skillset", skills=[skill], description="desc")
     skillset.name = "my_skillset"
     skillset.description = "desc"
     skillset.skills = [skill]
@@ -66,7 +66,7 @@ def test_skillset_to_dict_correct():
     skill1 = get_simple_skill("type1")
     skill2 = get_simple_skill("type2")
     skill3 = get_simple_skill("type3")
-    skillset = Skillset("my_skillset", [skill1, skill2, skill3], description="desc")
+    skillset = Skillset(name="my_skillset", skills=[skill1, skill2, skill3], description="desc")
     dict = skillset.to_dict()
     assert dict['name'] == "my_skillset"
     assert dict['skills'][0]['@odata.type']=='type1'
@@ -75,7 +75,7 @@ def test_skillset_to_dict_correct():
 
 
 def test_load_to_dict_same():
-    expected = get_json_file("skillset.json")
+    expected = get_json_file("skillset_simple.json")
     skillset_dict = copy.deepcopy(expected)
 
     skillset = Skillset.load(skillset_dict)

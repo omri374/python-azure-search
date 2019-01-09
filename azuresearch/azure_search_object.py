@@ -8,5 +8,5 @@ class AzureSearchObject(ABC):
         pass
 
     def remove_empty_values(dict):
-        return {k: v for k, v in dict.items() if
-                (v is not None) and (hasattr(v, '__len__') and len(v) > 0)}
+        dict = {k: v for k, v in dict.items() if (v is not None) or (hasattr(v, '__len__') and len(v) > 0)}
+        return dict
