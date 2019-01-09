@@ -2,10 +2,11 @@ from abc import ABC, abstractmethod
 
 import requests
 
+from azuresearch.azure_search_object import AzureSearchObject
 from azuresearch.service import Endpoint
 
 
-class BaseApiCall(ABC):
+class BaseApiCall(AzureSearchObject):
     """
     Abstract class for wrapping common calls to Azure Search services
     """
@@ -21,9 +22,7 @@ class BaseApiCall(ABC):
         else:
             self.endpoint = Endpoint(service_name)
 
-    @abstractmethod
-    def to_dict(self):
-        pass
+
 
     def create(self):
         result = self.endpoint.post(self.to_dict(), needs_admin=True)
@@ -51,6 +50,3 @@ class BaseApiCall(ABC):
     def verify(self):
         return self.get()
 
-    @staticmethod
-    def remove_empty_values_from_dict(dict):
-        return {k: v for k, v in dict.items() if v is not None}

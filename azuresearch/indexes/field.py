@@ -1,7 +1,9 @@
 import json
 
+from azuresearch.azure_search_object import AzureSearchObject
 
-class Field(object):
+
+class Field(AzureSearchObject):
     """
     :param name: name_of_field,
     :param type: Edm.String | Collection(Edm.String) | Edm.Int32 | Edm.Int64 | Edm.Double | Edm.Boolean | Edm.DateTimeOffset | Edm.GeographyPoint,
@@ -93,7 +95,7 @@ class Field(object):
             "synonymMaps": self.synonym_maps
         }
         # Remove None values
-        return_dict = {k: v for k, v in return_dict.items() if v is not None}
+        return_dict = Field.remove_empty_values(return_dict)
         return return_dict
 
     @classmethod

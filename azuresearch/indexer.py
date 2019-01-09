@@ -59,7 +59,7 @@ class Indexer(BaseApiCall):
         output_dict.update(self.params)
 
         # Remove None values
-        output_dict = BaseApiCall.remove_empty_values_from_dict(output_dict)
+        output_dict = BaseApiCall.remove_empty_values(output_dict)
         return dict
 
     def run(self):

@@ -21,5 +21,5 @@ class DataSource(BaseApiCall):
         }
 
         # Remove None values
-        dict = BaseApiCall.remove_empty_values_from_dict(dict)
+        dict = BaseApiCall.remove_empty_values(dict)
         return dict

@@ -1,6 +1,7 @@
 import pytest
 
-from azuresearch.indexes import *
+from azuresearch.indexes import Field, BooleanField, StringField, Int32Field, Int64Field, DoubleField, \
+    DateTimeOffsetField, GeographyPointField
 from tests.test_helpers import get_json_file, ordered
 
 

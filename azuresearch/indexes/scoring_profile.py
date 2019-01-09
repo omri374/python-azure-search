@@ -1,4 +1,10 @@
-class ScoringProfile(object):
+import json
+import warnings
+
+from azuresearch.azure_search_object import AzureSearchObject
+
+
+class ScoringProfile(AzureSearchObject):
     '''
     A scoring profile for an index. See this link for more information:
     taken from https://docs.microsoft.com/en-us/rest/api/searchservice/add-scoring-profiles-to-a-search-index
@@ -6,8 +12,6 @@ class ScoringProfile(object):
 
     def __init__(self, name, text=None, functions=None):
 
-        if text is None:
-            text = []
         if functions is None:
             functions = []
 
@@ -16,19 +20,42 @@ class ScoringProfile(object):
         self.functions = functions
 
     def __repr__(self):
-        return "<Suggester: {name}>".format(
-            name=self.name
+        return "<{classname}: {name}>".format(
+            classname=self.__name__, name=self.name
         )
 
     def to_dict(self):
-        return {
+        return_dict = {
             "name": self.name,
-            "text": [txt.to_dict() for txt in self.text],
+            "text": self.text,
             "functions": [func.to_dict() for func in self.functions]
         }
 
+        # Remove None values
+        return_dict = ScoringProfile.remove_empty_values(return_dict)
+        return return_dict
 
-class ScoringProfileText(object):
+    @classmethod
+    def load(cls, data):
+        if type(data) is str:
+            data = json.loads(data)
+        if type(data) is not dict:
+            raise Exception("Failed to parse input as Dict")
+        if 'name' not in data:
+            data['name'] = None
+        if 'text' not in data:
+            data['text'] = None
+        else:
+            data['text'] = ScoringProfileText.load(data['text'])
+        if 'functions' not in data:
+            data['functions'] = []
+        else:
+            data['functions'] = [ScoringProfileFunction.load(spf) for spf in data['functions']]
+
+        return cls(name=data['name'], text=data['text'], functions=data['functions'])
+
+
+class ScoringProfileText(AzureSearchObject):
     '''
     A text value for a scoring profile. Holds the weights of different fields.
     See this link for more information:
@@ -40,12 +67,27 @@ class ScoringProfileText(object):
         self.weights = weights
 
     def to_dict(self):
-        return {
+        return_dict = {
             "weights": [w.to_dict() for w in self.weights],
         }
 
+        # Remove None values
+        return_dict = ScoringProfileText.remove_empty_values(return_dict)
+        return return_dict
 
-class ScoreProfileTextWeights(object):
+    @classmethod
+    def load(cls, data):
+        if type(data) is str:
+            data = json.loads(data)
+        if type(data) is not dict:
+            raise Exception("Failed to parse input as Dict")
+        if 'weights' not in data:
+            data['weights'] = None
+
+        return cls(weights=data['weights'])
+
+
+class ScoreProfileTextWeights(AzureSearchObject):
     '''
     A weight for a field.
     See this link for more information:
@@ -59,10 +101,27 @@ class ScoreProfileTextWeights(object):
         self.relative_weight_value = relative_weight_value
 
     def to_dict(self):
-        return {self.searchable_field_name: self.relative_weight_value}
+        return_dict= {self.searchable_field_name: self.relative_weight_value}
+
+        # Remove None values
+        return_dict = ScoreProfileTextWeights.remove_empty_values(return_dict)
+        return return_dict
+
+    @classmethod
+    def load(cls, data):
+        if type(data) is str:
+            data = json.loads(data)
+        if type(data) is not dict:
+            raise Exception("Failed to parse input as Dict")
+        if 'searchableFieldName' not in data:
+            data['searchableFieldName'] = None
+        if 'relativeWeightValue' not in data:
+            data['relativeWeightValue'] = None
+
+        return cls(searchable_field_name=data['searchableFieldName'], relative_weight_value=data['relativeWeightValue'])
 
 
-class ScoringProfileFunction(object):
+class ScoringProfileFunction(AzureSearchObject):
     '''
     A function to perform for scoring.
     See this link for more information:
@@ -86,6 +145,8 @@ class ScoringProfileFunction(object):
         self.distance = distance
         self.tag = tag
 
+        self._validate_interpolation()
+
     def to_dict(self):
         dict = {
             "type": self.function_type,
@@ -98,8 +159,46 @@ class ScoringProfileFunction(object):
             "tag": self.tag,
         }
         # Remove None values
-        dict = {k: v for k, v in dict.items() if v is not None}
+        dict = ScoringProfileFunction.remove_empty_values(dict)
         return dict
+
+    @classmethod
+    def load(cls, data):
+        if type(data) is str:
+            data = json.loads(data)
+        if type(data) is not dict:
+            raise Exception("Failed to parse input as Dict")
+
+        if 'function_type' not in data:
+            data['function_type'] = None
+        if 'field_name' not in data:
+            data['field_name'] = None
+        if 'boost' not in data:
+            data['boost'] = None
+        if 'interpolation' not in data:
+            data['interpolation'] = None
+        if 'magnitude' not in data:
+            data['magnitude'] = None
+        if 'freshness' not in data:
+            data['freshness'] = None
+        if 'distance' not in data:
+            data['distance'] = None
+        if 'tag' not in data:
+            data['tag'] = None
+
+        return cls(function_type=data['function_type'],
+                   field_name=data['field_name'],
+                   boost=data['boost'],
+                   interpolation=data['interpolation'],
+                   magnitude=data['magnitude'],
+                   freshness=data['freshness'],
+                   distance=data['distance'],
+                   tag=data['tag'])
+
+    def _validate_interpolation(self):
+        if self.interpolation and self.interpolation not in interpolations:
+            warnings.warn("{interpolation} not in list of supported interpolations: {interpolations}".format(
+                interpolation=self.interpolation, interpolations=interpolations))
 
 
 function_types = {

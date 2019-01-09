@@ -1,12 +1,11 @@
 import json
 
+from azuresearch.base_api_call import BaseApiCall
 from azuresearch.document import Documents
-from azuresearch.service import Endpoint
 from .field import Field
 
 
-class Index(object):
-    endpoint = Endpoint("indexes")
+class Index(BaseApiCall):
     results = None
 
     def __init__(self,
@@ -21,6 +20,7 @@ class Index(object):
                  default_scoring_profile=None,
                  cors_options=None, **params
                  ):
+        super(Index, self).__init__("indexes")
         if fields is None:
             fields = []
         if analyzers is None:
@@ -46,9 +46,14 @@ class Index(object):
         self.char_filters = char_filters
         self.default_scoring_profile = default_scoring_profile
         self.cors_options = cors_options
+        if params:
+            self.params = params['kwargs']
+        else:
+            self.params = {}
 
         for f in self.fields:
             f.index_name = self.name
+
         self.documents = Documents(self)
 
     def __repr__(self):
@@ -80,22 +85,26 @@ class Index(object):
             "fields": [field.to_dict() for field in self.fields],
             "scoringProfiles": [sp.to_dict() for sp in self.scoring_profiles],
             "corsOptions": self.cors_options,
-            "suggesters": self.suggesters,
-            "analyzers": self.analyzers,
-            "tokenizers": self.tokenizers,
-            "tokenFilters": self.token_filters,
-            "charFilters": self.char_filters,
+            "suggesters": [sg.to_dict() for sg in self.suggesters],
+            "analyzers": [an.to_dict() for an in self.analyzers],
+            "tokenizers": [tk.to_dict() for tk in self.tokenizers],
+            "tokenFilters": [tkf.to_dict() for tkf in self.token_filters],
+            "charFilters": [cf.to_dict() for cf in self.char_filters],
             "defaultScoringProfile": self.default_scoring_profile
         }
         # Add additional arguments
         dict.update(self.params)
 
-        # Remove None values
-        dict = {k: v for k, v in dict.items() if v is not None}
+        # Remove None values and empty lists
+        dict = Index.remove_empty_values(dict)
         return dict
 
     @classmethod
     def load(cls, data):
+        from .suggester import Suggester
+        from azuresearch.analyzers.custom_analyzer import CustomAnalyzer
+        from azuresearch.indexes import ScoringProfile
+
         if type(data) is str:
             data = json.loads(data)
         if type(data) is not dict:
@@ -103,10 +112,16 @@ class Index(object):
 
         if 'suggesters' not in data:
             data['suggesters'] = []
+        else:
+            data['suggesters'] = [Suggester.load(sg) for sg in data['suggesters']]
         if 'analyzers' not in data:
             data['analyzers'] = []
+        else:
+            data['analyzers'] = [CustomAnalyzer.load(sg) for sg in data['analyzers']]
         if 'scoringProfiles' not in data:
             data['scoringProfiles'] = []
+        else:
+            data['scoringProfiles'] = [ScoringProfile.load(sp) for sp in data['scoringProfiles']]
         if 'tokenizers' not in data:
             data['tokenizers'] = []
         if 'tokenFilters' not in data:

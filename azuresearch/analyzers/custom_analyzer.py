@@ -1,10 +1,10 @@
+import json
+
 from azuresearch.service import Endpoint
 from .abstract_analyzer import AbstractAnalyzer
 
 
 class CustomAnalyzer(AbstractAnalyzer):
-    __name__ = 'CustomAnalyzer'
-    endpoint = Endpoint("indexes")
 
     def __init__(self,
                  index_name,
@@ -35,7 +35,28 @@ class CustomAnalyzer(AbstractAnalyzer):
             "tokenizer": self.tokenizer,
             "token_filters": self.token_filters
         }
-
         # Remove None values
-        dict = {k: v for k, v in dict.items() if v is not None}
+        dict = CustomAnalyzer.remove_empty_values(dict)
         return dict
+
+    @classmethod
+    def load(cls, data):
+        if type(data) is str:
+            data = json.loads(data)
+        if type(data) is not dict:
+            raise Exception("Failed to parse input as Dict")
+
+        if 'indexName' not in data:
+            data['indexName'] = None
+        if 'name' not in data:
+            data['name'] = None
+        if '@odata.type' not in data:
+            data['@odata.type'] = None
+        if 'charFilters' not in data:
+            data['charFilters'] = []
+        if 'tokenizer' not in data:
+            data['tokenizer'] = None
+        if 'token_filters' not in data:
+            data['tokenFilters'] = []
+        return cls(index_name=data['indexName'], analyzer_name=data['name'], analyzer_type=data['@odata.type'],
+                   char_filters=data['charFilters'], token_filters=data['tokenFilters'], tokenizer=data['tokenizer'])

@@ -1,8 +1,10 @@
 import json
 
+from azuresearch.azure_search_object import AzureSearchObject
 
-class Skill(object):
-    def __init__(self, skill_type, inputs, outputs, context, **params):
+
+class Skill(AzureSearchObject):
+    def __init__(self, **kwargs):
         """
 
         :param skill_type: the type of skill (@odata.type)
@@ -12,23 +14,24 @@ class Skill(object):
         :param params: Additional arguments for this skill
         """
 
-        if (inputs is None) or (len(inputs) == 0):
+        if "inputs" not in kwargs:
             raise Exception("Inputs must be provided")
+        inputs = kwargs['inputs']
         if not isinstance(inputs[0], SkillInput):
             raise TypeError("Inputs should be of type SkillInput")
-        if (outputs is None) or (len(outputs) == 0):
+        if "outputs" not in kwargs:
             raise Exception("outputs must be provided")
+        outputs = kwargs['outputs']
         if not isinstance(outputs[0], SkillOutput):
             raise TypeError("Outputs should be of type SkillOutput")
 
-        self.skill_type = skill_type
+        self.skill_type = kwargs.get("@odata.type")
         self.inputs = inputs
         self.outputs = outputs
-        self.context = context
-        if params:
-            self.params = params['kwargs']
-        else:
-            self.params = {}
+        self.context = kwargs.get("context")
+
+        self.params = {k:v for (k,v) in kwargs.items() if k not in ['@odata.type','inputs','outputs','context']}
+
 
     def to_dict(self):
         dict = {
@@ -38,21 +41,20 @@ class Skill(object):
             "context": self.context
         }
 
-        #Add additional arguments
+        # Add additional arguments
         dict.update(self.params)
 
-        #Remove None values
-        dict = {k: v for k, v in dict.items() if v is not None}
+        # Remove None values
+        dict = Skill.remove_empty_values(dict)
         return dict
 
     @classmethod
-    def load(cls, data, **kwargs):
+    def load(cls, data):
         if data:
             if type(data) is str:
                 data = json.loads(data)
             if type(data) is not dict:
                 raise Exception("Failed to load JSON file with skill data")
-            kwargs.update(data)
             if "@odata.type" not in data:
                 raise Exception("Please provide the skill type (@odata.type)")
             if "inputs" not in data:
@@ -60,10 +62,13 @@ class Skill(object):
             if "outputs" not in data:
                 raise Exception("Please provide the skill outputs")
 
+            data['outputs'] = [SkillOutput.load(so) for so in data['outputs']]
+            data['inputs'] = [SkillInput.load(so) for so in data['inputs']]
+
             if 'context' not in data:
                 data['context'] = None
-
-            return cls(data['@odata.type'], data['inputs'], data['outputs'], data['context'], **kwargs)
+            skill_type = data['@odata.type']
+            return cls(**data)
         else:
             raise Exception("data is null")
 
@@ -83,18 +88,36 @@ class SkillInput(object):
             "source": self.source
         }
 
+    @classmethod
+    def load(cls, data):
+        if data:
+            if type(data) is str:
+                data = json.loads(data)
+            if type(data) is not dict:
+                raise Exception("Failed to load JSON file with skill data")
+            return cls(name=data['name'], source=data['source'])
+
 
 class SkillOutput(object):
     """
     Defines the output of a skill
     """
 
-    def __init__(self, name, targetName):
+    def __init__(self, name, target_name):
         self.name = name
-        self.targetName = targetName
+        self.target_name = target_name
 
     def to_dict(self):
         return {
             "name": self.name,
-            "targetName": self.targetName
+            "targetName": self.target_name
         }
+
+    @classmethod
+    def load(cls, data):
+        if data:
+            if type(data) is str:
+                data = json.loads(data)
+            if type(data) is not dict:
+                raise Exception("Failed to load JSON file with skill data")
+            return cls(name=data['name'], target_name=data['targetName'])

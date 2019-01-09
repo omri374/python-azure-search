@@ -1,9 +1,10 @@
+import copy
+
 import pytest
 
 from azuresearch.skills import Skillset, SkillInput, Skill, SkillOutput
 from azuresearch.skills.predefined.cognitive_skills import KeyPhraseExtractionSkill
-from tests.test_connection_to_azure_search import get_json_file
-from tests.test_helpers import ordered
+from tests.test_helpers import ordered, get_json_file
 
 
 def get_simple_skill(type="my_skill_type", input_name="name", input_source="source", output_name="name",
@@ -71,3 +72,14 @@ def test_skillset_to_dict_correct():
     assert dict['skills'][0]['@odata.type']=='type1'
     assert dict['skills'][1]['@odata.type']=='type2'
     assert dict['skills'][2]['@odata.type']=='type3'
+
+
+def test_load_to_dict_same():
+    expected = get_json_file("skillset.json")
+    skillset_dict = copy.deepcopy(expected)
+
+    skillset = Skillset.load(skillset_dict)
+    actual = skillset.to_dict()
+
+    assert ordered(actual)==ordered(expected)
+

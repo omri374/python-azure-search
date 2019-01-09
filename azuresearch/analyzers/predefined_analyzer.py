@@ -19,7 +19,7 @@ class PredefinedAnalyzer(AbstractAnalyzer):
         }
 
         # Remove None values
-        dict = {k: v for k, v in dict.items() if v is not None}
+        dict = PredefinedAnalyzer.remove_empty_values(dict)
         return dict
 
 

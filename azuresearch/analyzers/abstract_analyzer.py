@@ -1,10 +1,11 @@
 import logging
 from abc import ABC, abstractmethod
 
+from azuresearch.azure_search_object import AzureSearchObject
 
-class AbstractAnalyzer(ABC):
 
-    @abstractmethod
+class AbstractAnalyzer(AzureSearchObject):
+
     def __init__(self, index_name, analyzer_name, analyzer_type):
         self.index_name = index_name
         self.analyzer_name = analyzer_name
@@ -27,7 +28,3 @@ class AbstractAnalyzer(ABC):
         else:
             logging.error(
                 "Cannot update analyzer unless the index is turned off")
-
-    @abstractmethod
-    def to_dict(self):
-        pass
