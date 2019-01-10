@@ -13,6 +13,7 @@ class Skill(AzureSearchObject):
         :param context: Each skill should have a "context". The context represents the level at which operations take place
         :param params: Additional arguments for this skill
         """
+        super().__init__(**kwargs)
 
         if "inputs" not in kwargs:
             raise Exception("Inputs must be provided")
@@ -33,23 +34,24 @@ class Skill(AzureSearchObject):
         self.outputs = outputs
         self.context = kwargs.get("context")
 
-        self.params = {k:v for (k,v) in kwargs.items() if k not in ['skill_type','@odata.type','inputs','outputs','context']}
-
+        self.params = {k: v for (k, v) in kwargs.items() if
+                       k not in ['skill_type', '@odata.type', 'inputs', 'outputs', 'context']}
 
     def to_dict(self):
-        dict = {
+        return_dict = {
             "@odata.type": self.skill_type,
             "inputs": [inp.to_dict() for inp in self.inputs],
             "outputs": [outp.to_dict() for outp in self.outputs],
             "context": self.context
         }
-
-        # Add additional arguments
-        dict.update(self.params)
+        # add additional user generated params
+        return_dict.update(self.params)
+        # make all params camelCase (to be sent correctly to Azure Search
+        return_dict = self.to_camel_case_dict(return_dict)
 
         # Remove None values
-        dict = Skill.remove_empty_values(dict)
-        return dict
+        return_dict = self.remove_empty_values(return_dict)
+        return return_dict
 
     @classmethod
     def load(cls, data):
@@ -69,56 +71,58 @@ class Skill(AzureSearchObject):
             data['inputs'] = [SkillInput.load(so) for so in data['inputs']]
 
             skill_type = data['@odata.type']
+            data = cls.to_snake_case_dict(data)
             return cls(**data)
         else:
             raise Exception("data is null")
 
 
-class SkillInput(object):
+class SkillInput(AzureSearchObject):
     """
     Defines an input for a skill
     """
 
-    def __init__(self, name, source):
+    def __init__(self, name, source, **kwargs):
+        super().__init__(**kwargs)
         self.name = name
         self.source = source
 
     def to_dict(self):
-        return {
+        return_dict = {
             "name": self.name,
             "source": self.source
         }
 
-    @classmethod
-    def load(cls, data):
-        if data:
-            if type(data) is str:
-                data = json.loads(data)
-            if type(data) is not dict:
-                raise Exception("Failed to load JSON file with skill data")
-            return cls(name=data['name'], source=data['source'])
+        # add additional user generated params
+        return_dict.update(self.params)
+        # make all params camelCase (to be sent correctly to Azure Search
+        return_dict = self.to_camel_case_dict(return_dict)
+
+        # Remove None values
+        return_dict = self.remove_empty_values(return_dict)
+        return return_dict
 
 
-class SkillOutput(object):
+class SkillOutput(AzureSearchObject):
     """
     Defines the output of a skill
     """
 
-    def __init__(self, name, target_name):
+    def __init__(self, name, target_name, **kwargs):
+        super().__init__(**kwargs)
         self.name = name
         self.target_name = target_name
 
     def to_dict(self):
-        return {
+        return_dict = {
             "name": self.name,
             "targetName": self.target_name
         }
+        # add additional user generated params
+        return_dict.update(self.params)
+        # make all params camelCase (to be sent correctly to Azure Search
+        return_dict = self.to_camel_case_dict(return_dict)
 
-    @classmethod
-    def load(cls, data):
-        if data:
-            if type(data) is str:
-                data = json.loads(data)
-            if type(data) is not dict:
-                raise Exception("Failed to load JSON file with skill data")
-            return cls(name=data['name'], target_name=data['targetName'])
+        # Remove None values
+        return_dict = self.remove_empty_values(return_dict)
+        return return_dict
