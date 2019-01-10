@@ -11,7 +11,8 @@ class BaseApiCall(AzureSearchObject):
     Abstract class for wrapping common calls to Azure Search services
     """
 
-    def __init__(self, service_name, endpoint=None):
+    def __init__(self, service_name, endpoint=None,**kwargs):
+        super().__init__(**kwargs)
         """
         :param service_name: Name of Azure Search service (e.g. indexes, datasources, skillsets)
         :param endpoint:

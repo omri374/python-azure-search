@@ -52,6 +52,10 @@ class Field(AzureSearchObject):
         self.search_analyzer = search_analyzer
         self.analyzer = analyzer
 
+        self.params = {}
+        if kwargs:
+            self.params.update(kwargs)
+
         if synonym_maps is None:
             synonym_maps = []
         self.synonym_maps = synonym_maps
@@ -94,8 +98,14 @@ class Field(AzureSearchObject):
             "indexAnalyzer": self.index_analyzer,
             "synonymMaps": self.synonym_maps
         }
+
+        # add additional user generated params
+        return_dict.update(self.params)
+        # make all params camelCase (to be sent correctly to Azure Search
+        return_dict = self.to_camel_case_dict(return_dict)
+
         # Remove None values
-        return_dict = Field.remove_empty_values(return_dict)
+        return_dict = self.remove_empty_values(return_dict)
         return return_dict
 
     @classmethod
@@ -106,10 +116,12 @@ class Field(AzureSearchObject):
             if type(data) is not dict:
                 raise Exception("Failed to load JSON file with field data")
             field_type = types[data.pop('type')]
+
             kwargs.update(data)
+            kwargs = cls.to_snake_case_dict(kwargs)
             return field_type(**kwargs)
         else:
-            raise Exception("data is Null")
+            raise Exception("data is None")
 
 
 class StringField(Field):

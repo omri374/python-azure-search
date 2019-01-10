@@ -10,14 +10,15 @@ class ScoringProfile(AzureSearchObject):
     taken from https://docs.microsoft.com/en-us/rest/api/searchservice/add-scoring-profiles-to-a-search-index
     '''
 
-    def __init__(self, name, text=None, functions=None):
-
+    def __init__(self, name, text=None, functions=None,**kwargs):
+        super().__init__(**kwargs)
         if functions is None:
             functions = []
 
         self.name = name
         self.text = text
         self.functions = functions
+
 
     def __repr__(self):
         return "<{classname}: {name}>".format(
@@ -31,8 +32,13 @@ class ScoringProfile(AzureSearchObject):
             "functions": [func.to_dict() for func in self.functions]
         }
 
+        # add additional user generated params
+        return_dict.update(self.params)
+        # make all params camelCase (to be sent correctly to Azure Search
+        return_dict = self.to_camel_case_dict(return_dict)
+
         # Remove None values
-        return_dict = ScoringProfile.remove_empty_values(return_dict)
+        return_dict = self.remove_empty_values(return_dict)
         return return_dict
 
     @classmethod
@@ -41,18 +47,14 @@ class ScoringProfile(AzureSearchObject):
             data = json.loads(data)
         if type(data) is not dict:
             raise Exception("Failed to parse input as Dict")
-        if 'name' not in data:
-            data['name'] = None
-        if 'text' not in data:
-            data['text'] = None
-        else:
+        if 'text' in data:
             data['text'] = ScoringProfileText.load(data['text'])
-        if 'functions' not in data:
-            data['functions'] = []
-        else:
+        if 'functions' in data:
             data['functions'] = [ScoringProfileFunction.load(spf) for spf in data['functions']]
 
-        return cls(name=data['name'], text=data['text'], functions=data['functions'])
+        data = cls.to_snake_case_dict(data)
+
+        return cls(**data)
 
 
 class ScoringProfileText(AzureSearchObject):
@@ -63,7 +65,8 @@ class ScoringProfileText(AzureSearchObject):
     @:param weights: a list of field name : weight value pairs
     '''
 
-    def __init__(self, weights):
+    def __init__(self, weights, **kwargs):
+        super().__init__(**kwargs)
         self.weights = weights
 
     def to_dict(self):
@@ -71,20 +74,15 @@ class ScoringProfileText(AzureSearchObject):
             "weights": [w.to_dict() for w in self.weights],
         }
 
+        # add additional user generated params
+        return_dict.update(self.params)
+        # make all params camelCase (to be sent correctly to Azure Search
+        return_dict = self.to_camel_case_dict(return_dict)
+
         # Remove None values
-        return_dict = ScoringProfileText.remove_empty_values(return_dict)
+        return_dict = self.remove_empty_values(return_dict)
         return return_dict
 
-    @classmethod
-    def load(cls, data):
-        if type(data) is str:
-            data = json.loads(data)
-        if type(data) is not dict:
-            raise Exception("Failed to parse input as Dict")
-        if 'weights' not in data:
-            data['weights'] = None
-
-        return cls(weights=data['weights'])
 
 
 class ScoreProfileTextWeights(AzureSearchObject):
@@ -96,7 +94,8 @@ class ScoreProfileTextWeights(AzureSearchObject):
     @:param relative_weight_value: weight value
     '''
 
-    def __init__(self, searchable_field_name, relative_weight_value):
+    def __init__(self, searchable_field_name, relative_weight_value,**kwargs):
+        super().__init__(**kwargs)
         self.searchable_field_name = searchable_field_name
         self.relative_weight_value = relative_weight_value
 
@@ -107,19 +106,6 @@ class ScoreProfileTextWeights(AzureSearchObject):
         return_dict = ScoreProfileTextWeights.remove_empty_values(return_dict)
         return return_dict
 
-    @classmethod
-    def load(cls, data):
-        if type(data) is str:
-            data = json.loads(data)
-        if type(data) is not dict:
-            raise Exception("Failed to parse input as Dict")
-        if 'searchableFieldName' not in data:
-            data['searchableFieldName'] = None
-        if 'relativeWeightValue' not in data:
-            data['relativeWeightValue'] = None
-
-        return cls(searchable_field_name=data['searchableFieldName'], relative_weight_value=data['relativeWeightValue'])
-
 
 class ScoringProfileFunction(AzureSearchObject):
     '''
@@ -128,16 +114,18 @@ class ScoringProfileFunction(AzureSearchObject):
     https://docs.microsoft.com/en-us/rest/api/searchservice/add-scoring-profiles-to-a-search-index#bkmk_indexref    '''
 
     def __init__(self,
-                 function_type,
-                 field_name,
+                 type,
+                 name=None,
                  boost=None,
                  interpolation=None,
                  magnitude=None,
                  freshness=None,
                  distance=None,
-                 tag=None):
-        self.function_type = function_type
-        self.field_name = field_name
+                 tag=None,
+                 **kwargs):
+        super().__init__(**kwargs)
+        self.type = type
+        self.name = name
         self.boost = boost
         self.interpolation = interpolation
         self.magnitude = magnitude
@@ -148,52 +136,25 @@ class ScoringProfileFunction(AzureSearchObject):
         self._validate_interpolation()
 
     def to_dict(self):
-        dict = {
-            "type": self.function_type,
+        return_dict = {
+            "type": self.type,
             "boost": self.boost,
-            "fieldName": self.field_name,
+            "fieldName": self.name,
             "interpolation": self.interpolation,
             "magnitude": self.magnitude,
             "freshness": self.freshness,
             "distance": self.distance,
             "tag": self.tag,
         }
+        # add additional user generated params
+        return_dict.update(self.params)
+        # make all params camelCase (to be sent correctly to Azure Search
+        return_dict = self.to_camel_case_dict(return_dict)
+
         # Remove None values
-        dict = ScoringProfileFunction.remove_empty_values(dict)
-        return dict
+        return_dict = self.remove_empty_values(return_dict)
+        return return_dict
 
-    @classmethod
-    def load(cls, data):
-        if type(data) is str:
-            data = json.loads(data)
-        if type(data) is not dict:
-            raise Exception("Failed to parse input as Dict")
-
-        if 'function_type' not in data:
-            data['function_type'] = None
-        if 'field_name' not in data:
-            data['field_name'] = None
-        if 'boost' not in data:
-            data['boost'] = None
-        if 'interpolation' not in data:
-            data['interpolation'] = None
-        if 'magnitude' not in data:
-            data['magnitude'] = None
-        if 'freshness' not in data:
-            data['freshness'] = None
-        if 'distance' not in data:
-            data['distance'] = None
-        if 'tag' not in data:
-            data['tag'] = None
-
-        return cls(function_type=data['function_type'],
-                   field_name=data['field_name'],
-                   boost=data['boost'],
-                   interpolation=data['interpolation'],
-                   magnitude=data['magnitude'],
-                   freshness=data['freshness'],
-                   distance=data['distance'],
-                   tag=data['tag'])
 
     def _validate_interpolation(self):
         if self.interpolation and self.interpolation not in interpolations:

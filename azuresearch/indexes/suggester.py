@@ -5,8 +5,8 @@ from azuresearch.base_api_call import BaseApiCall
 
 class Suggester(BaseApiCall):
 
-    def __init__(self, name, source_fields, search_mode="analyzingInfixMatching"):
-        super(Suggester, self).__init__("indexes")
+    def __init__(self, name, source_fields, search_mode="analyzingInfixMatching",**kwargs):
+        super().__init__("indexes",**kwargs)
         self.name = name
         self.source_fields = source_fields
         self.search_mode = search_mode
@@ -23,23 +23,14 @@ class Suggester(BaseApiCall):
             "searchMode": self.search_mode
         }
 
-        # Remove None values
-        return_dict = Suggester.remove_empty_values(return_dict)
-        return return_dict
+        # add additional user generated params
+        return_dict.update(self.params)
+        # make all params camelCase (to be sent correctly to Azure Search
+        return_dict = self.to_camel_case_dict(return_dict)
 
-    @classmethod
-    def load(cls, data):
-        if type(data) is str:
-            data = json.loads(data)
-        if type(data) is not dict:
-            raise Exception("Failed to parse input as Dict")
-        if 'name' not in data:
-            data['name'] = None
-        if 'sourceFields' not in data:
-            data['sourceFields'] = []
-        if 'searchMode' not in data:
-            data['searchMode'] = None
-        return cls(name=data['name'], source_fields=data['sourceFields'], search_mode=data['searchMode'])
+        # Remove None values
+        return_dict = self.remove_empty_values(return_dict)
+        return return_dict
 
     def suggest(self, query, extra=None):
         query = {

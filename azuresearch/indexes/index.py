@@ -18,7 +18,7 @@ class Index(BaseApiCall):
                  token_filters=None,
                  scoring_profiles=None,
                  default_scoring_profile=None,
-                 cors_options=None, **params
+                 cors_options=None, **kwargs
                  ):
         super(Index, self).__init__("indexes")
         if fields is None:
@@ -46,10 +46,9 @@ class Index(BaseApiCall):
         self.char_filters = char_filters
         self.default_scoring_profile = default_scoring_profile
         self.cors_options = cors_options
-        if params:
-            self.params = params['kwargs']
-        else:
-            self.params = {}
+        self.params = {}
+        if kwargs:
+            self.params.update(kwargs)
 
         for f in self.fields:
             f.index_name = self.name
@@ -80,7 +79,7 @@ class Index(BaseApiCall):
                     defaultScoringProfile=self.default_scoring_profile)
 
     def to_dict(self):
-        dict = {
+        return_dict = {
             "name": self.name,
             "fields": [field.to_dict() for field in self.fields],
             "scoringProfiles": [sp.to_dict() for sp in self.scoring_profiles],
@@ -92,12 +91,14 @@ class Index(BaseApiCall):
             "charFilters": [cf.to_dict() for cf in self.char_filters],
             "defaultScoringProfile": self.default_scoring_profile
         }
-        # Add additional arguments
-        dict.update(self.params)
+        # add additional user generated params
+        return_dict.update(self.params)
+        # make all params camelCase (to be sent correctly to Azure Search
+        return_dict = self.to_camel_case_dict(return_dict)
 
-        # Remove None values and empty lists
-        dict = Index.remove_empty_values(dict)
-        return dict
+        # Remove None values
+        return_dict = self.remove_empty_values(return_dict)
+        return return_dict
 
     @classmethod
     def load(cls, data):
@@ -110,40 +111,21 @@ class Index(BaseApiCall):
         if type(data) is not dict:
             raise Exception("Failed to parse input as Dict")
 
-        if 'suggesters' not in data:
-            data['suggesters'] = []
-        else:
-            data['suggesters'] = [Suggester.load(sg) for sg in data['suggesters']]
-        if 'analyzers' not in data:
-            data['analyzers'] = []
-        else:
-            data['analyzers'] = [CustomAnalyzer.load(sg) for sg in data['analyzers']]
-        if 'scoringProfiles' not in data:
-            data['scoringProfiles'] = []
-        else:
-            data['scoringProfiles'] = [ScoringProfile.load(sp) for sp in data['scoringProfiles']]
-        if 'tokenizers' not in data:
-            data['tokenizers'] = []
-        if 'tokenFilters' not in data:
-            data['tokenFilters'] = []
-        if 'charFilters' not in data:
-            data['charFilters'] = []
-        if 'corsOptions' not in data:
-            data['corsOptions'] = None
-        if 'defaultScoringProfile' not in data:
-            data['defaultScoringProfile'] = None
+        if 'suggesters' in data:
+            data['suggesters'] = [Suggester.load(sg) for sg in data.get("suggesters")]
 
-        return cls(name=data['name'],
-                   fields=[Field.load(f) for f in data['fields']],
-                   scoring_profiles=data['scoringProfiles'],
-                   suggesters=data['suggesters'],
-                   analyzers=data['analyzers'],
-                   char_filters=data['charFilters'],
-                   tokenizers=data['tokenizers'],
-                   token_filters=data['tokenFilters'],
-                   cors_options=data['corsOptions'],
-                   default_scoring_profile=data['defaultScoringProfile']
-                   )
+        if 'analyzers' in data:
+            data['analyzers'] = [CustomAnalyzer.load(sg) for sg in data.get('analyzers')]
+
+        if 'scoringProfiles' in data:
+            data['scoring_profiles'] = [ScoringProfile.load(sp) for sp in data['scoringProfiles']]
+
+        if 'fields' in data:
+            data['fields'] = [Field.load(fi) for fi in data['fields']]
+
+        data = cls.to_snake_case_dict(data)
+
+        return cls(**data)
 
     def create(self):
         return self.endpoint.post(self.to_dict(), needs_admin=True)
