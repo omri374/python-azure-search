@@ -7,6 +7,7 @@ from azuresearch.service import Endpoint
 
 
 class BaseApiCall(AzureSearchObject):
+
     """
     Abstract class for wrapping common calls to Azure Search services
     """

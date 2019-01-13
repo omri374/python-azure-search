@@ -6,7 +6,8 @@ from azuresearch.azure_search_object import AzureSearchObject
 
 class AbstractAnalyzer(AzureSearchObject):
 
-    def __init__(self, index_name, analyzer_name, analyzer_type):
+    def __init__(self, index_name, analyzer_name, analyzer_type,**kwargs):
+        super().__init__(**kwargs)
         self.index_name = index_name
         self.analyzer_name = analyzer_name
         self.analyzer_type = analyzer_type

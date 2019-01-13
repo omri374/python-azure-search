@@ -6,21 +6,26 @@ class PredefinedAnalyzer(AbstractAnalyzer):
     __name__ = 'PredefinedAnalyzer'
     endpoint = Endpoint("indexes")
 
-    def __init__(self, index_name, analyzer_name, analyzer_type, options=None):
-        super(PredefinedAnalyzer, self).__init__(index_name, analyzer_name, analyzer_type)
+    def __init__(self, index_name, analyzer_name, analyzer_type, options=None,**kwargs):
+        super(PredefinedAnalyzer, self).__init__(index_name, analyzer_name, analyzer_type,**kwargs)
         self.options = options
 
     def to_dict(self):
-        dict= {
+        return_dict= {
             "name": self.analyzer_name,
             "@odata.type": self.analyzer_type,
             "searchMode": self.search_mode,
             "options": self.options
         }
 
+        # add additional user generated params
+        return_dict.update(self.params)
+        # make all params camelCase (to be sent correctly to Azure Search
+        return_dict = self.to_camel_case_dict(return_dict)
+
         # Remove None values
-        dict = PredefinedAnalyzer.remove_empty_values(dict)
-        return dict
+        return_dict = self.remove_empty_values(return_dict)
+        return return_dict
 
 
 predefined_analyzers = {
@@ -54,10 +59,6 @@ tokenizers = {
     "uax_url_email": "#Microsoft.Azure.Search.UaxUrlEmailTokenizer",
     "whitespace": None
 }
-
-## Excel formula to create list from documentation:
-# =CONCAT("'",A1,"' : ",IF(B1="None","None,",CONCAT("'#Microsoft.Azure.Search.",B1,"',")))
-# Table URL: https://docs.microsoft.com/en-us/rest/api/searchservice/Custom-analyzers-in-Azure-Search?redirectedfrom=MSDN#TokenFilters
 
 token_filters = {
     "arabic_normalization": None,

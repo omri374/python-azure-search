@@ -1,7 +1,9 @@
-
-from tests.test_helpers import get_json_file, ordered
-from azuresearch.indexes import Index, Field
 import copy
+import json
+
+from azuresearch.indexes import Index, Field
+from tests.test_helpers import get_json_file, ordered
+
 
 def get_dummy_field(name, type):
     return Field(name, type)
@@ -35,8 +37,6 @@ def test_load_index_correct_dict():
     test_index = Index.load(index_dict)
     actual = test_index.to_dict()
 
-    assert ordered(actual)==ordered(expected)
-
-
-def test_index_with_kwargs_to_dict_correct():
-    assert 1 == 0
+    expected_dump = json.dumps(expected, sort_keys=True, indent=2, )
+    actual_dump = json.dumps(actual, sort_keys=True, indent=2)
+    assert actual_dump == expected_dump

@@ -2,7 +2,10 @@ import json
 
 from azuresearch.base_api_call import BaseApiCall
 from azuresearch.document import Documents
+from azuresearch.service import Endpoint
 from .field import Field
+
+SERVICE_NAME = 'indexes'
 
 
 class Index(BaseApiCall):
@@ -20,7 +23,7 @@ class Index(BaseApiCall):
                  default_scoring_profile=None,
                  cors_options=None, **kwargs
                  ):
-        super(Index, self).__init__("indexes")
+        super(Index, self).__init__(SERVICE_NAME)
         if fields is None:
             fields = []
         if analyzers is None:
@@ -115,7 +118,7 @@ class Index(BaseApiCall):
             data['suggesters'] = [Suggester.load(sg) for sg in data.get("suggesters")]
 
         if 'analyzers' in data:
-            data['analyzers'] = [CustomAnalyzer.load(sg) for sg in data.get('analyzers')]
+            data['analyzers'] = [CustomAnalyzer.load(sg,index_name=data.get('name')) for sg in data.get('analyzers')]
 
         if 'scoringProfiles' in data:
             data['scoring_profiles'] = [ScoringProfile.load(sp) for sp in data['scoringProfiles']]
@@ -145,7 +148,7 @@ class Index(BaseApiCall):
 
     @classmethod
     def list(cls):
-        return cls.endpoint.get(needs_admin=True)
+        return Endpoint(SERVICE_NAME).get(needs_admin=True)
 
     def search(self, query):
         query = {

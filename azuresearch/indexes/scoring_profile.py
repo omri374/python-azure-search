@@ -28,7 +28,7 @@ class ScoringProfile(AzureSearchObject):
     def to_dict(self):
         return_dict = {
             "name": self.name,
-            "text": self.text,
+            "text": self.text.to_dict(),
             "functions": [func.to_dict() for func in self.functions]
         }
 
@@ -71,7 +71,7 @@ class ScoringProfileText(AzureSearchObject):
 
     def to_dict(self):
         return_dict = {
-            "weights": [w.to_dict() for w in self.weights],
+            "weights": self.weights
         }
 
         # add additional user generated params
@@ -83,28 +83,14 @@ class ScoringProfileText(AzureSearchObject):
         return_dict = self.remove_empty_values(return_dict)
         return return_dict
 
-
-
-class ScoreProfileTextWeights(AzureSearchObject):
-    '''
-    A weight for a field.
-    See this link for more information:
-    https://docs.microsoft.com/en-us/rest/api/searchservice/add-scoring-profiles-to-a-search-index
-    @:param searchable_field_name: name of field
-    @:param relative_weight_value: weight value
-    '''
-
-    def __init__(self, searchable_field_name, relative_weight_value,**kwargs):
-        super().__init__(**kwargs)
-        self.searchable_field_name = searchable_field_name
-        self.relative_weight_value = relative_weight_value
-
-    def to_dict(self):
-        return_dict= {self.searchable_field_name: self.relative_weight_value}
-
-        # Remove None values
-        return_dict = ScoreProfileTextWeights.remove_empty_values(return_dict)
-        return return_dict
+    @classmethod
+    def load(cls, data):
+        if type(data) is str:
+            data = json.loads(data)
+        if type(data) is not dict:
+            raise Exception("Failed to parse input as Dict")
+        data = cls.to_snake_case_dict(data)
+        return cls(**data)
 
 
 class ScoringProfileFunction(AzureSearchObject):
@@ -115,7 +101,7 @@ class ScoringProfileFunction(AzureSearchObject):
 
     def __init__(self,
                  type,
-                 name=None,
+                 field_name=None,
                  boost=None,
                  interpolation=None,
                  magnitude=None,
@@ -125,7 +111,7 @@ class ScoringProfileFunction(AzureSearchObject):
                  **kwargs):
         super().__init__(**kwargs)
         self.type = type
-        self.name = name
+        self.field_name = field_name
         self.boost = boost
         self.interpolation = interpolation
         self.magnitude = magnitude
@@ -139,7 +125,7 @@ class ScoringProfileFunction(AzureSearchObject):
         return_dict = {
             "type": self.type,
             "boost": self.boost,
-            "fieldName": self.name,
+            "fieldName": self.field_name,
             "interpolation": self.interpolation,
             "magnitude": self.magnitude,
             "freshness": self.freshness,
@@ -154,7 +140,6 @@ class ScoringProfileFunction(AzureSearchObject):
         # Remove None values
         return_dict = self.remove_empty_values(return_dict)
         return return_dict
-
 
     def _validate_interpolation(self):
         if self.interpolation and self.interpolation not in interpolations:

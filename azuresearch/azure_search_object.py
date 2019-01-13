@@ -19,6 +19,10 @@ class AzureSearchObject(ABC):
     def to_dict(self):
         pass
 
+    def toJSON(self):
+        dict = self.to_dict()
+        return json.dumps(dict)
+
     @classmethod
     def load(cls, data):
         if type(data) is str:
