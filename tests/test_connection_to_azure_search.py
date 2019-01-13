@@ -95,3 +95,17 @@ class TestUpload(unittest.TestCase):
         results = self.index.search("expensive").json()
         print("Results were", len(results['value']), results)
         assert len(results['value']) == 2
+
+
+class TestBlobStorage(unittest.TestCase):
+    def setUp(self):
+        setup_indexes()
+        hotels_index = Index.load(get_json_file("hotels.index.json"))
+        name = get_fake_name()
+        hotels_index.name = name
+        hotels_index.update()
+
+        self.index = hotels_index
+
+    def tearDown(self):
+        teardown_indexes()

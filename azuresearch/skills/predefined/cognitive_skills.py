@@ -1,6 +1,6 @@
 import logging
 
-from azuresearch.skills import Skill, SkillInput, SkillOutput
+from azuresearch.skills import Skill, SkillOutput, SkillInput
 
 predefined_skills = {
     "KeyPhraseExtractionSkill": "#Microsoft.Skills.Text.KeyPhraseExtractionSkill",

@@ -2,14 +2,15 @@ import copy
 
 import pytest
 
-from azuresearch.skills import Skillset, SkillInput, Skill, SkillOutput
+from azuresearch.skills import Skill, SkillInput, SkillOutput, Skillset
 from azuresearch.skills.predefined.cognitive_skills import KeyPhraseExtractionSkill
 from tests.test_helpers import ordered, get_json_file
 
 
 def get_simple_skill(type="my_skill_type", input_name="name", input_source="source", output_name="name",
                      output_target="target", context="context"):
-    skill = Skill(skill_type=type, inputs=[SkillInput(input_name, input_source)], outputs=[SkillOutput(output_name, output_target)], context=context)
+    skill = Skill(skill_type=type, inputs=[SkillInput(input_name, input_source)],
+                  outputs=[SkillOutput(output_name, output_target)], context=context)
     return skill
 
 
@@ -69,9 +70,9 @@ def test_skillset_to_dict_correct():
     skillset = Skillset(name="my_skillset", skills=[skill1, skill2, skill3], description="desc")
     dict = skillset.to_dict()
     assert dict['name'] == "my_skillset"
-    assert dict['skills'][0]['@odata.type']=='type1'
-    assert dict['skills'][1]['@odata.type']=='type2'
-    assert dict['skills'][2]['@odata.type']=='type3'
+    assert dict['skills'][0]['@odata.type'] == 'type1'
+    assert dict['skills'][1]['@odata.type'] == 'type2'
+    assert dict['skills'][2]['@odata.type'] == 'type3'
 
 
 def test_load_to_dict_same():
@@ -81,5 +82,4 @@ def test_load_to_dict_same():
     skillset = Skillset.load(skillset_dict)
     actual = skillset.to_dict()
 
-    assert ordered(actual)==ordered(expected)
-
+    assert ordered(actual) == ordered(expected)
