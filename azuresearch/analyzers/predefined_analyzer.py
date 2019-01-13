@@ -6,14 +6,14 @@ class PredefinedAnalyzer(AbstractAnalyzer):
     __name__ = 'PredefinedAnalyzer'
     endpoint = Endpoint("indexes")
 
-    def __init__(self, index_name, analyzer_name, analyzer_type, options=None,**kwargs):
-        super(PredefinedAnalyzer, self).__init__(index_name, analyzer_name, analyzer_type,**kwargs)
+    def __init__(self, index_name, name, type, options=None,**kwargs):
+        super(PredefinedAnalyzer, self).__init__(index_name, name, type,**kwargs)
         self.options = options
 
     def to_dict(self):
         return_dict= {
-            "name": self.analyzer_name,
-            "@odata.type": self.analyzer_type,
+            "name": self.name,
+            "@odata.type": self.type,
             "searchMode": self.search_mode,
             "options": self.options
         }

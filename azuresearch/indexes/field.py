@@ -21,6 +21,7 @@ class Field(AzureSearchObject):
     Once the analyzer is chosen, it cannot be changed for the field.
     :param synonym_maps: List of synonym map to use for this index
     """
+    python_type = None
 
     def __init__(self,
                  name,
@@ -37,10 +38,8 @@ class Field(AzureSearchObject):
                  analyzer=None,
                  synonym_maps=None,
                  **kwargs):
-
+        super().__init__(**kwargs)
         self.name = name
-        if type is not None:
-            self._field_type = type
         self.index_name = index_name
         self.searchable = searchable
         self.filterable = filterable
@@ -51,14 +50,10 @@ class Field(AzureSearchObject):
         self.index_analyzer = index_analyzer
         self.search_analyzer = search_analyzer
         self.analyzer = analyzer
-
-        self.params = {}
-        if kwargs:
-            self.params.update(kwargs)
-
-        if synonym_maps is None:
-            synonym_maps = []
         self.synonym_maps = synonym_maps
+
+        if type is not None:
+            self._field_type = type
 
         self._validate_type()
         self._validate_name()

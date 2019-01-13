@@ -6,15 +6,15 @@ from azuresearch.azure_search_object import AzureSearchObject
 
 class AbstractAnalyzer(AzureSearchObject):
 
-    def __init__(self, index_name, analyzer_name, analyzer_type,**kwargs):
+    def __init__(self, index_name, name, type,**kwargs):
         super().__init__(**kwargs)
         self.index_name = index_name
-        self.analyzer_name = analyzer_name
-        self.analyzer_type = analyzer_type
+        self.name = name
+        self.type = type
 
     def test(self, text):
-        body = {"analyzer": self.analyzer_type, "text": text}
-        logging.info("Testing analyzer: {analyzer} with text: {text}".format(analyzer=self.analyzer_type, text=text))
+        body = {"analyzer": self.type, "text": text}
+        logging.info("Testing analyzer: {analyzer} with text: {text}".format(analyzer=self.type, text=text))
         return self.endpoint.get(data=body, endpoint=self.index_name, needs_admin=True)
 
     def update(self, allow_index_downtime=False):

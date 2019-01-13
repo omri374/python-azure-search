@@ -6,14 +6,14 @@ from .abstract_analyzer import AbstractAnalyzer
 class CustomAnalyzer(AbstractAnalyzer):
 
     def __init__(self,
-                 analyzer_name,
+                 name,
                  index_name=None,
                  analyzer_type="#Microsoft.Azure.Search.CustomAnalyzer",
                  char_filters=None,
                  tokenizer=None,
                  token_filters=None,
                  **kwargs):
-        super(CustomAnalyzer, self).__init__(index_name, analyzer_name, analyzer_type, **kwargs)
+        super().__init__(index_name=index_name, name=name, type=analyzer_type, **kwargs)
 
         self.tokenizer = tokenizer
         self.char_filters = char_filters
@@ -21,8 +21,8 @@ class CustomAnalyzer(AbstractAnalyzer):
 
     def to_dict(self):
         return_dict = {
-            "name": self.analyzer_name,
-            "@odata.type": self.analyzer_type,
+            "name": self.name,
+            "@odata.type": self.type,
             "charFilters": self.char_filters,
             "tokenizer": self.tokenizer,
             "token_filters": self.token_filters
