@@ -1,4 +1,4 @@
-from sqlalchemy.dialects.mysql import json
+import json
 
 from azuresearch.azure_search_object import AzureSearchObject
 
